@@ -88,6 +88,20 @@ function vars() {
 }
 
 /**
+ * 
+ * @return \Framework\Modules
+ */
+function modules() {
+	
+	return singleton('modules', function(){
+		
+		require FPATH.'/class.modules.php';
+		return new Framework\Modules();
+		
+	});
+}
+
+/**
  * Вызов метода контроллера с передачей массива параметров (все стандартно)
  * @param type $cname
  * @param type $cmethod
@@ -112,15 +126,13 @@ function call_controller($cname, $cmethod = 'index', $params = []) {
 		
 		return $controller;
 	});
-
-	$methodName = $cmethod.'Action';
 	
 	if($controller){ 
 		
-		if(method_exists($controller, $methodName)){
-			return call_user_func_array([$controller, $methodName], $params);
+		if(method_exists($controller, $cmethod)){
+			return call_user_func_array([$controller, $cmethod], $params);
 		} else {
-			exit(sprintf('Method <strong>%s</strong> does not exists in controller <strong>%s</strong>', $methodName, ucfirst($cname).'Controller'));
+			exit(sprintf('Method <strong>%s</strong> does not exists in controller <strong>%s</strong>', $cmethod, ucfirst($cname).'Controller'));
 		}
 	}
 	
@@ -129,9 +141,14 @@ function call_controller($cname, $cmethod = 'index', $params = []) {
 
 /**
  * Автоматический захват вызываемого контроллера (если контроллера нет - продолжаем выполнение системы)
+ * - также захватывает роутинг модулей
  */
 function hook_route(){
 	
 	$parse = snippets()->request->uri(true);
-	call_controller($parse['controller'], $parse['method'], $parse['params']);
+	call_controller($parse['controller'], $parse['method'].'Action', $parse['params']);
+	
+	if($parse['is_module']){
+		modules()->execute($parse['controller'], $parse['method'].'Action', $parse['params']);
+	}
 }

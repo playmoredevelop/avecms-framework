@@ -52,7 +52,13 @@ class SnippetRequest {
 			
 			$exp = parse_url($uri)['path'];
 			$exp = explode('/', trim($exp, '/'));
+			$is_module = false;
+			if(!empty($exp[0]) AND $exp[0] == 'modules'){
+				array_shift($exp);
+				$is_module = true;
+			}
 			$uri = [
+				'is_module' => $is_module,
 				'controller' => !(empty($exp[0])) ? $exp[0] : 'index',
 				'method' => !empty($exp[1]) ? $exp[1] : 'index',
 				'params' => 1
