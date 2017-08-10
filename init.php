@@ -7,7 +7,7 @@ define('FPATH', realpath(dirname(__FILE__)));
 define('CMSROOT', $_SERVER['DOCUMENT_ROOT']);
 define('TIME', time());
 define('DOMAIN', $_SERVER['SERVER_NAME']);
-define('FW_VERSION', '1.0');
+define('FW_VERSION', '1.1');
 
 /**
  * @property \Framework\SnippetRequest $request Работа с входным запросом
@@ -25,8 +25,6 @@ define('FW_VERSION', '1.0');
  * @property \Framework\SnippetString $string Сниппеты генерации строк и полезные функции
  * @property \Framework\SnippetTables $tables Работа с таблицами в БД
  * @property \Framework\SnippetUrl $url Работа с адресной строкой и ее параметрами
- * @property \Framework\SnippetModule_catalog $module_catalog Работа с данными модуля каталога + связка с самой системой
- * @property \Framework\SnippetModule_basket $module_basket Работа с данными модуля корзины
  */
 class SnippetsFactory {
 
