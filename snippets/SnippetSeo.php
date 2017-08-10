@@ -2,10 +2,10 @@
 
 namespace Framework;
 
-class SnippetGenerator {
+class SnippetSeo {
 	/** @author Playmore 2017 (playmoredevelop@gmail.com) */
 
-    public function keywords($text, $count = 7) {
+    public function gen_keywords($text, $count = 7) {
 
 		$text = preg_replace('#[^а-яА-Я\s]+#ui', '', strip_tags($text));
 		$text = preg_replace('#\s[а-яА-Я]{1,3}\s#ui', ' ', mb_strtolower($text));
