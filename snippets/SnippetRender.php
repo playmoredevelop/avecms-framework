@@ -24,6 +24,8 @@ class SnippetRender extends SnippetRenderBase {
 
 class SnippetRenderBase {
 	
+	protected $viewdata = [];
+	
 	public function section($section, $cache_ttlm = false) {
 
 		$path = (str_replace('.php', '', FPATH.'/views/sections/'.$section)).'.php';
@@ -55,6 +57,37 @@ class SnippetRenderBase {
 		}
 		
 		return '['.$widgetfile.']';
+	}
+	
+	/**
+	 * Рендерит файл по указанному пути от корня
+	 * @param string $path
+	 * @return html
+	 */
+	public function file($path) {
+		
+		if(file_exists($path)){
+			ob_start();
+			include CMSROOT.$path;
+			return ob_get_clean();
+		}
+		return sprintf('File <b>%s</b> not found. Please, check filepath.', $path);
+	}
+	
+	// сеттер переменных для отображения (в отображениях доступен через $this->param)
+	public function __set($param, $value) {
+		
+		$this->viewdata[$param] = $value;
+		return $value;
+	}
+	
+	// геттер для переменных отображения ($this->param)
+	public function __get($param) {
+		
+		if(array_key_exists($param, $this->viewdata)){
+			return $this->viewdata[$param];
+		}
+		return null;
 	}
 }
 
