@@ -5,7 +5,7 @@ namespace Framework;
 define('NLT', PHP_EOL.chr(9));
 define('LT', chr(9));
 
-class QueryBuilder extends QueryBuilderMethods {
+class QueryBuilderMethods {
 	/** @author Playmore 2017 (playmoredevelop@gmail.com) */
 	
 	protected $select = false;
@@ -21,79 +21,10 @@ class QueryBuilder extends QueryBuilderMethods {
 		'select' => false,
 		'where' => false
 	];
-	
-	public function select(array $fields) {
-		
-		$this->select = $fields;
-		return $this;
-	}
-	
-	public function from($tables) {
-		
-		is_string($tables) AND $tables = implode(',', $tables);
-		
-		$this->from = $tables;
-		return $this;
-	}
-	
-	public function join($table, $condition, $type = 'INNER') {
-		
-		$this->joins[] = [
-			'type' => $type, // INNER JOIN
-			'table' => $table, // table t1
-			'condition' => $condition, // ON t1.f = t2.f
-		];
-		return $this;
-	}
-	
-	public function where() {
-		
-		$args = func_get_args();
-		return $this->addWhereType($args, 'AND');
-	}
-	
-	public function where_or() {
-		
-		$args = func_get_args();
-		return $this->addWhereType($args, 'OR');
-	}
-	
-	public function group_by($field) {
-		
-		if(is_array($field)){
-			$this->groupby = $field;
-		} else {
-			$this->groupby[] = $field;
-		}
-		return $this;
-	}
-	
-	public function order_by($field, $sort = 'ASC') {
-		
-		if(is_array($field)){
-			$this->orderby = $field;
-		} else {
-			$this->orderby[$field] = $sort;
-		}
-		return $this;
-	}
-	
-	public function having() {
-		
-	}
-	
-	public function limit($count, $page = 1) {
-		
-		$this->limit = $count;
-		$this->offset = abs($page - 1) * $count;
-		return $this;
-	}
-	
-	
-}
-
-class QueryBuilderMethods {
-	/** @author Playmore 2017 (playmoredevelop@gmail.com) */
+	protected $autogroup = 0;
+	protected $grouplogic = [
+		0 => 'OR'
+	];
 	
 	public function getQueryString() {
 		
@@ -161,19 +92,28 @@ class QueryBuilderMethods {
 		$where = function(){
 			$where = [];
 			foreach($this->conditions as $group => $items){
-				$before = ''; $after = '';
-				if($group > 0) {
-					$before = '('; $after = ')';
+				$before = ''; $after = ''; $logic = '';
+				// если есть группировка, то оборачиваем в скобки
+				if(array_key_exists($group, $this->grouplogic)) {
+					$before = '('; $after = ')'; $logic = $this->grouplogic[$group].' ';
 				}
+				// перебираем все условия в группе
 				foreach($items as $item){
 					if(!empty($where[$group])){
+						// a = 123
 						$where[$group][] = implode(' ', [NLT.$item['join'], $this->qf($item['field']), $item['operand'], $item['value']]);
 					} else {
 						$where[$group][] = implode(' ', [$this->qf($item['field']), $item['operand'], $item['value']]);
 					}
 				}
-				$where[$group] = $before.implode(' ', $where[$group]).$after;
+				// если условие не первое, то прицепляем логический оператор группы
+				if(count($where) > 1){
+					$where[$group] = $logic.$before.implode(' ', $where[$group]).$after;
+				} else {
+					$where[$group] = $before.implode(' ', $where[$group]).$after;
+				}
 			}
+			
 			if(!empty($this->raw['where'])){
 				$where[] = NLT.$this->raw['where'];
 			}
@@ -210,7 +150,7 @@ class QueryBuilderMethods {
 		};
 		
 		$limit_offset = function(){
-			return 'LIMIT 100 OFFSET 0';
+			return 'LIMIT '.$this->limit.' OFFSET '.$this->offset;
 		};
 		
 		return implode(' ', [
@@ -245,7 +185,7 @@ class QueryBuilderMethods {
 		return $this;
 	}
 	
-	protected function addWhere($field, $value = false, $operand = false, $join = 'AND', $group = 0) {
+	protected function addWhere($field, $value = false, $operand = false, $join = 'AND') {
 		
 		switch (gettype($value)) {
 			case 'array':
@@ -264,7 +204,7 @@ class QueryBuilderMethods {
 				break;
 		}
 		
-		$this->conditions[$group][] = [
+		$this->conditions[$this->autogroup][] = [
 			'join' => $join,
 			'field' => $field,
 			'value' => $value,
@@ -277,4 +217,88 @@ class QueryBuilderMethods {
 		
 		return '`'.str_replace('.', '`.`', trim($name)).'`';
 	}
+}
+
+class QueryBuilder extends QueryBuilderMethods {
+	/** @author Playmore 2017 (playmoredevelop@gmail.com) */
+	
+	public function select(array $fields) {
+		
+		$this->select = $fields;
+		return $this;
+	}
+	
+	public function from($tables) {
+		
+		is_string($tables) AND $tables = explode(',', $tables);
+		
+		$this->from = $tables;
+		return $this;
+	}
+	
+	public function join($table, $condition, $type = 'INNER') {
+		
+		$this->joins[] = [
+			'type' => $type, // INNER JOIN
+			'table' => $table, // table t1
+			'condition' => $condition, // ON t1.f = t2.f
+		];
+		return $this;
+	}
+	
+	public function where() {
+		
+		$args = func_get_args();
+		return $this->addWhereType($args, 'AND');
+	}
+	
+	public function where_or() {
+		
+		$args = func_get_args();
+		return $this->addWhereType($args, 'OR');
+	}
+	
+	public function where_group(callable $callback, $logic = 'AND') {
+		
+		$autogroup = snippets()->string->random(3);
+		$this->autogroup = $autogroup;
+		$this->grouplogic[$autogroup] = $logic;
+		call_user_func($callback, $this);
+		$this->autogroup = 0;
+		
+		return $this;
+	}
+	
+	public function group_by($field) {
+		
+		if(is_array($field)){
+			$this->groupby = $field;
+		} else {
+			$this->groupby[] = $field;
+		}
+		return $this;
+	}
+	
+	public function order_by($field, $sort = 'ASC') {
+		
+		if(is_array($field)){
+			$this->orderby = $field;
+		} else {
+			$this->orderby[$field] = $sort;
+		}
+		return $this;
+	}
+	
+	public function having() {
+		
+	}
+	
+	public function limit($count, $page = 1) {
+		
+		$this->limit = $count;
+		$this->offset = abs($page - 1) * $count;
+		return $this;
+	}
+	
+	
 }

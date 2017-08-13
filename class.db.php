@@ -48,6 +48,10 @@ class DB {
 	 * @return \extendsDB
 	 */
 	public function fetch($query) {
+		
+		if($query instanceof QueryBuilder){
+			$query = $query->getQueryString();
+		}
 
 		if($this->full_logger){
 			$this->_query_log[] = $query;
