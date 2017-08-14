@@ -48,6 +48,6 @@ class SnippetsFactory {
 // подрубаем все функции фреймворка
 require_once FPATH.'/functions.php';
 // подрубаем класс для работы с переменными системы
-require_once FPATH.'/class.cms.php';
+require_once FPATH.'/classes/class.cms.php';
 
 hook_route();

@@ -48,7 +48,7 @@ function db(){
 
 	return singleton('db', function(){
 		
-		require FPATH.'/class.db.php';
+		require FPATH.'/classes/class.db.php';
 		return new \Framework\DB();
 		
 	});
@@ -68,7 +68,7 @@ function benchmarks() {
 	
 	return singleton('benchmarks', function(){
 		
-		require FPATH.'/class.benchmarks.php';
+		require FPATH.'/classes/class.benchmarks.php';
 		return new \Framework\Benchmarks();
 		
 	});
@@ -81,7 +81,7 @@ function vars() {
 
 	return singleton('vars-container', function(){
 		
-		require FPATH.'/class.vars.container.php';
+		require FPATH.'/classes/class.vars.container.php';
 		return new Framework\VarsContainer();
 		
 	});
@@ -95,7 +95,7 @@ function modules() {
 	
 	return singleton('modules', function(){
 		
-		require FPATH.'/class.modules.php';
+		require FPATH.'/classes/class.modules.php';
 		return new Framework\Modules();
 		
 	});
