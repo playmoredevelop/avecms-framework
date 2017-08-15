@@ -49,5 +49,8 @@ class SnippetsFactory {
 require_once FPATH.'/functions.php';
 // подрубаем класс для работы с переменными системы
 require_once FPATH.'/classes/class.cms.php';
+// подрубаем базовые классы
+require_once FPATH.'/classes/class.basecontroller.php';
+require_once FPATH.'/classes/class.basemodel.php';
 
 hook_route();

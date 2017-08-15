@@ -1,6 +1,6 @@
 <?php
 
-class ExampleController {
+class ExampleController extends \Framework\Controllers\BaseController {
 	/** @author Playmore 2017 (playmoredevelop@gmail.com) */
 	
 	public function autocompleteAction() {
@@ -41,5 +41,10 @@ class ExampleController {
 			snippets()->response->json(['suggestions' => []]);
 		}
 		
+	}
+	
+	public function callmodelAction() {
+		
+		debug($this->users()->getPrimary(1));
 	}
 }
