@@ -295,6 +295,7 @@ class QueryBuilder extends QueryBuilderMethods {
 	
 	public function limit($count, $page = 1) {
 		
+		($page < 1) AND $page = 1;
 		$this->limit = $count;
 		$this->offset = abs($page - 1) * $count;
 		return $this;
