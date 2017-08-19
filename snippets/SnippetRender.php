@@ -68,7 +68,7 @@ class SnippetRenderBase {
 		
 		if(file_exists($path)){
 			ob_start();
-			include CMSROOT.$path;
+			include $path;
 			return ob_get_clean();
 		}
 		return sprintf('File <b>%s</b> not found. Please, check filepath.', $path);

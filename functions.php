@@ -110,29 +110,46 @@ function modules() {
  */
 function call_controller($cname, $cmethod = 'index', $params = []) {
 	
+	if(in_array($cname, ['admin'])){
+		return false;
+	}
+	
 	$controller = singleton('Controller|'.$cname, function() use ($cname){
 		
-		$filepath = FPATH.'/controllers/'.$cname.'.php';
-		$classname = ucfirst($cname).'Controller';
-		$controller = false;
+		$classname = implode('', array_map(function($val){
+			return ucfirst($val);
+		}, explode('.', $cname))).'Controller';
 		
-		if(file_exists($filepath)){
+		if(class_exists($classname)){
 			
-			require $filepath;
-			if(class_exists($classname)){
-				$controller = new $classname();
+			return new $classname();
+			
+		} else {
+			
+			$filepath = FPATH.'/controllers/'.$cname.'.php';
+			
+			if(file_exists($filepath)){
+				require $filepath;
+				if(class_exists($classname)){
+					return new $classname();
+				}
 			}
 		}
 		
-		return $controller;
+		return false;
 	});
 	
 	if($controller){ 
 		
+		$cmethod = str_replace('Action', '', $cmethod).'Action';
+		
 		if(method_exists($controller, $cmethod)){
 			return call_user_func_array([$controller, $cmethod], $params);
 		} else {
-			exit(sprintf('Method <strong>%s</strong> does not exists in controller <strong>%s</strong>', $cmethod, ucfirst($cname).'Controller'));
+			$classname = implode('', array_map(function($val){
+				return ucfirst($val);
+			}, explode('.', $cname))).'Controller';
+			exit(sprintf('Method <strong>%s</strong> does not exists in controller <strong>%s</strong>', $cmethod, $classname));
 		}
 	}
 	
